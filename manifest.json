@@ -1,0 +1,14 @@
+{
+  "name": "そうげい計画帖",
+  "short_name": "そうげい計画帖",
+  "description": "デイサービスの送迎計画づくり。1ヶ月先までの迎え・送りを計画して自動配車。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f4ea",
+  "theme_color": "#2c5077",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
