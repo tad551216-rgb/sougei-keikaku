@@ -261,6 +261,9 @@ dialog h2{margin-top:0;}
       <button class="small ghost" id="btnGeoHere">📍 現在地から取得</button>
       <button class="small ghost" id="btnGeoAddr">🔍 住所から取得</button>
     </div>
+    <div class="row" style="margin-top:8px;">
+      <button class="small ghost" id="btnFacMap">📍 Googleマップで確認する</button>
+    </div>
     <p class="note" id="geoStatus" style="margin-bottom:0;"></p>
   </div>
 
@@ -321,8 +324,9 @@ dialog h2{margin-top:0;}
   <input id="uGeo" placeholder="例：34.48, 135.43 ／ XW2R+XX 和泉市">
   <div class="row" style="margin-top:6px;">
     <button class="small ghost" id="uGeoBtn">🔍 住所から座標を取得</button>
+    <button class="small ghost" id="uMapBtn">📍 Googleマップで確認する</button>
   </div>
-  <p class="note">Googleマップでご自宅を長押しすると座標が、場所をタップするとPlus Code（例：XW2R+XX 和泉市）が出ます。どちらを貼り付けてもOKです。</p>
+  <p class="note">Googleマップでご自宅を長押しすると座標が、場所をタップするとPlus Code（例：XW2R+XX 和泉市）が出ます。どちらを貼り付けてもOKです。「Googleマップで確認する」は、入力中の住所（無ければ座標）をGoogleマップで開いて見比べられます。</p>
   <label class="fld">送迎の条件</label>
   <label style="display:flex;align-items:center;gap:8px;font-size:.9rem;cursor:pointer;">
     <input type="checkbox" id="uWc" style="width:auto;accent-color:var(--indigo);">車椅子で乗車する（車椅子固定装置のある車に配車）
@@ -1209,6 +1213,19 @@ $('#uGeoBtn').addEventListener('click', async ()=>{
     toast('座標が見つかりませんでした。住所の書き方を変えてお試しください');
   }
 });
+/* --- Googleマップで確認（住所→無ければ座標） --- */
+function openMapsCheck(addr, geoText){
+  const q0 = (addr||'').trim();
+  let q = q0;
+  if(!q){
+    const g = parseGeo(geoText);
+    if(g.ok && g.lat!=null) q = g.lat+','+g.lng;
+    else if(g.shortPlus) q = (geoText||'').trim();  // 短いPlus Codeはそのまま検索に渡す
+  }
+  if(!q){ toast('先に住所か座標を入れてください'); return; }
+  window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q), '_blank');
+}
+$('#uMapBtn').addEventListener('click', ()=>openMapsCheck($('#uAddr').value, $('#uGeo').value));
 $('#uCancel').addEventListener('click', ()=>$('#userDlg').close());
 $('#uDelete').addEventListener('click', ()=>{
   if(!editUserId) return;
@@ -1334,6 +1351,7 @@ bindNum('#setLeg','leg',1,120);
 bindNum('#setSpeed','speed',5,80);
 bindNum('#setBoard','board',1,30);
 bindNum('#setGap','gap',10,300);
+$('#btnFacMap').addEventListener('click', ()=>openMapsCheck($('#facAddr').value, $('#facGeo').value));
 $('#btnGeoHere').addEventListener('click', ()=>{
   if(!navigator.geolocation){ toast('この端末では現在地を取得できません'); return; }
   setFacGeoStatus('現在地を取得しています…');
