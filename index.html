@@ -280,6 +280,16 @@ dialog h2{margin-top:0;}
     <p class="note" style="margin-bottom:0;">迎え・送りの時刻がこの差以上離れていると（例：8:30便と9:30便）、いったん事業所に戻ってから次の便に向かう想定で計算します。</p>
   </div>
 
+  <h2>連絡文について</h2>
+  <div class="card">
+    <p class="note" style="margin-top:0;">
+      「予定表をコピー」「共有（LINEなど）」で出る文は、<b>お名前を名字だけ</b>にしています。
+      LINEのトークには履歴が残り続けるためです。<br>
+      同じ名字の方が複数おられるときだけ、取り違えのないよう<b>下のお名前を一文字</b>添えます（例：松本 静さま）。
+      画面上はこれまでどおり、フルネームで表示します。
+    </p>
+  </div>
+
   <h2>データの控え（書き出し・読み込み）</h2>
   <div class="card">
     <p class="note">機種変更や他の端末への引き継ぎに。書き出した文をメモやLINEのKeepに貼って保存し、新しい端末で読み込みます。</p>
@@ -1147,6 +1157,22 @@ function buildMapUrls(ids, dir){
   }
   return urls;
 }
+/* 連絡文に出すお名前。
+   LINEなどで外に出る文なので、名字だけにする。
+   ただし同じ名字の方が複数いるときは、取り違えないよう下の名前の1文字を添える。 */
+function planName(u){
+  const nm = String(u && u.name || '').trim();
+  if(!nm) return '';
+  const p = nm.split(/[\s\u3000]+/);
+  if(p.length < 2) return nm;                 /* 区切りがなければ、そのまま */
+  const sei = p[0], mei = p.slice(1).join('');
+  const same = (state.users||[]).filter(x =>
+    x && x.active !== false &&
+    String(x.name||'').trim().split(/[\s\u3000]+/)[0] === sei
+  ).length;
+  return same > 1 ? sei + ' ' + mei.slice(0,1) + 'さま' : sei + 'さま';
+}
+
 function vehiclePlanText(ds, dir, vid){
   const v = vehicleById(vid);
   const a = planEntriesFor(ds, dir).find(x=>x.vid===vid);
@@ -1157,7 +1183,7 @@ function vehiclePlanText(ds, dir, vid){
   if(sim.firstDepart!=null) lines.push('出発 '+toHM(sim.firstDepart)+' → 帰着 '+toHM(sim.returnAt));
   a.stops.forEach((id,i)=>{
     const u = userById(id), st = sim.stops.find(s=>s.id===id);
-    lines.push((MARU[i]||(i+1))+' '+toHM(st.t)+' '+u.name+(u.wc?'（♿）':'')
+    lines.push((MARU[i]||(i+1))+' '+toHM(st.t)+' '+planName(u)+(u.wc?'（♿）':'')
       +(st.delay>0?'（+'+st.delay+'分見込）':'')
       +((ent[id]&&ent[id].note)?'／'+ent[id].note:''));
   });
