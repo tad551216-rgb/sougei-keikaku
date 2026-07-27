@@ -1062,6 +1062,7 @@ function renderRoute(){
         +'<div class="row" style="padding:0 9px 9px;">'
         +'<button class="small" data-map="1">🗺 Googleマップでルート表示</button>'
         +'<button class="small ghost" data-copytext="1">📋 予定表をコピー</button>'
+        +(navigator.share?'<button class="small ghost" data-share="1">📤 共有（LINEなど）</button>':'')
         +'</div>'
         +'</div>';
     });
@@ -1086,6 +1087,10 @@ function renderRoute(){
     const cpBtn = box.querySelector('button[data-copytext]');
     if(cpBtn) cpBtn.addEventListener('click', ()=>{
       copyText(vehiclePlanText(ds, dir, vid)).then(()=>toast('予定表をコピーしました'));
+    });
+    const shBtn = box.querySelector('button[data-share]');
+    if(shBtn) shBtn.addEventListener('click', ()=>{
+      navigator.share({text: vehiclePlanText(ds, dir, vid)}).catch(()=>{});
     });
   });
 }
