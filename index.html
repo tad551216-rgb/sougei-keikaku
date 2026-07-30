@@ -306,6 +306,19 @@ dialog h2{margin-top:0;}
     <input type="file" id="fileImport" accept=".json,application/json" style="display:none;">
   </div>
 
+  <h2>お試しと、まっさらに戻す</h2>
+  <div class="card">
+    <p class="note" style="margin-top:0;">架空の利用者6名・車2台・事業所が入ります。<b>いまのデータはすべて置き換わります。</b>使い方を試すとき、職員の方に説明するときにお使いください。</p>
+    <div class="row">
+      <button id="btnSample">🧪 サンプルデータを入れて試す</button>
+    </div>
+    <p class="note" style="margin-top:12px;">利用者のお名前は、デイきろく帖・入浴きろく帖・機能訓練きろく帖・ヒヤリハット帖のサンプルと同じにしてあります。あわせてお試しいただけます。</p>
+    <div class="row" style="margin-top:12px;">
+      <button class="ghost" id="btnClearAll" style="color:#B85E5E;border-color:#B85E5E;">🗑 すべてのデータを消す</button>
+    </div>
+    <p class="note" style="margin-top:4px;">利用者・車両・事業所・送迎の計画を、すべて消してまっさらに戻します。</p>
+  </div>
+
   <h2>このアプリについて</h2>
   <div class="card">
     <p class="note" style="margin-bottom:0;">データはすべてこの端末の中（ブラウザ）だけに保存され、外部には送信されません。到着見込みは直線距離などからの目安で、実際の道路事情により前後します。ルート案内はGoogleマップに引き継いで表示します。60日より前の計画データは自動で片づけられます。<br>つくる手帖 v1</p>
@@ -716,6 +729,55 @@ function moveMonth(d){
   state.calMonth = nd.getFullYear()+'-'+String(nd.getMonth()+1).padStart(2,'0');
   save(); renderCal();
 }
+/* ===== お試し用のサンプルデータ =====
+   実在しない方々です。お名前は、デイサービス応援帖のほかの
+   アプリのサンプルと同じにしてあります。 */
+function sampleState(){
+  const today = fmtDate(new Date());
+  const U=[
+    {id:'u9001',name:'松本 静江',addr:'（見本）みどり町2-4', lat:34.5041,lng:135.4148,wc:false,
+     days:[1,3,5],pickT:'09:00',dropT:'16:00',memo:'玄関前でお待ちです。段差に手すりあり。',active:true},
+    {id:'u9002',name:'川上 定男',addr:'（見本）さくら台5-11',lat:34.4972,lng:135.4231,wc:true,
+     days:[1,2,3,4,5],pickT:'09:10',dropT:'16:00',memo:'車椅子。リフト車でお願いします。',active:true},
+    {id:'u9003',name:'中村 ハル',addr:'（見本）ひばり丘1-2', lat:34.5089,lng:135.4245,wc:false,
+     days:[2,4],pickT:'09:20',dropT:'15:30',memo:'ご家族が送り出しに立ち会われます。',active:true},
+    {id:'u9004',name:'田島 正一',addr:'（見本）あおば2-6',  lat:34.4958,lng:135.4079,wc:true,
+     days:[1,3,5],pickT:'09:00',dropT:'16:00',memo:'車椅子。玄関に段差二段。',active:true},
+    {id:'u9005',name:'沢田 きよ',addr:'（見本）みどり町7-3', lat:34.5019,lng:135.4106,wc:false,
+     days:[1,2,3,4,5],pickT:'09:30',dropT:'16:10',memo:'',active:true},
+    {id:'u9006',name:'岡田 茂',  addr:'（見本）さくら台1-9', lat:34.4995,lng:135.4187,wc:false,
+     days:[2,4],pickT:'09:15',dropT:'15:30',memo:'集合住宅。エントランスまでお迎え。',active:true}
+  ];
+  const V=[
+    {id:'v9001',name:'1号車（ワゴン）',  seats:8, wcSlots:0, active:true},
+    {id:'v9002',name:'2号車（リフト付）',seats:4, wcSlots:2, active:true}
+  ];
+  return {
+    facility:{name:'デイサービス みどりの里', addr:'（見本）ひなた町5-3', lat:34.5008, lng:135.4165},
+    users:U, vehicles:V,
+    settings:Object.assign({}, DEFAULT_SETTINGS),
+    days:{}, seq:9100,
+    selDate:today, selDir:'pick', calMonth:today.slice(0,7)
+  };
+}
+function redrawEverything(){
+  renderCal(); renderDay(); renderUsers(); renderVehicles(); renderSettings();
+}
+$('#btnSample').addEventListener('click', ()=>{
+  const has = (state.users&&state.users.length) || (state.vehicles&&state.vehicles.length);
+  if(has && !confirm('いまの利用者・車両・事業所・送迎の計画をすべて置き換えて、サンプルを入れます。\nよろしいですか？')) return;
+  localStorage.setItem(STORE_KEY, JSON.stringify(sampleState()));
+  state = load(); save(); redrawEverything();
+  toast('サンプルを入れました');
+});
+$('#btnClearAll').addEventListener('click', ()=>{
+  if(!confirm('利用者・車両・事業所・送迎の計画を、すべて消します。\n元にもどせません。よろしいですか？')) return;
+  if(!confirm('本当によろしいですか？\n先に「書き出してコピー」で控えをお取りください。')) return;
+  localStorage.removeItem(STORE_KEY);
+  state = load(); save(); redrawEverything();
+  toast('消しました');
+});
+
 function renderCal(){
   const [y,m] = state.calMonth.split('-').map(Number);
   $('#calTitle').textContent = y+'年'+m+'月';
